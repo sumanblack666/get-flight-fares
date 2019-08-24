@@ -6,15 +6,15 @@ const fs = require('fs');
 const util = require('util');
 dayjs.extend(customParseFormat);
 
-const departure = 'SNO';
-const destination = 'DMK';
+const departure = 'KUL';
+const destination = 'LGK';
 
 const getRedAirlineFares = () => {
     return new Promise(async (resolve, reject) => {
         console.log('- Get flight from Red Airline');
-        const browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
         const page = await browser.newPage();
-        const mainUri = 'https://www.airasia.com/th/th';
+        const mainUri = 'https://www.airasia.com/en/gb';
         const departSelector = 'input[aria-controls="home-origin-autocomplete-heatmapstation-combobox"]';
 
         try {
@@ -43,13 +43,13 @@ const getRedAirlineFares = () => {
         }
 
         page.on('response', async (response) => {
-            const pattern = /pricecalendar\/\d\/\d\/THB\/\w{3}\/\w{3}\/\d{4}-\d{2}-\d{2}\/1\/\d+/;
+            const pattern = /pricecalendar\/\d\/\d\/MYR\/\w{3}\/\w{3}\/\d{4}-\d{2}-\d{2}\/1\/\d+/;
 
             if (pattern.test(response.url())) {
                 console.log('detected', response.url());
                 const data = await response.json();
                 try {
-                    const dataKey = `${departure}${destination}|THB`;
+                    const dataKey = `${departure}${destination}|MYR`;
                     const result = Object.keys(data[dataKey]).map(key => {
                         const keyDate = dayjs(key, 'YYYY-MM-DD')
                         const date = keyDate.format('DD/MM/YYYY');
